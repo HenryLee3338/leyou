@@ -1,0 +1,49 @@
+server:
+  port: 10010
+spring:
+  application:
+    name: ly-gateway
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:10086/eureka
+    registry-fetch-interval-seconds: 5  #间隔多久去拉取服务注册信息，默认为30秒
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 6000 # 熔断超时时长：6000ms
+ribbon:
+  ConnectTimeout: 500 # ribbon链接超时时长
+  ReadTimeout: 2000 # ribbon读取超时时长
+  MaxAutoRetries: 0  # 当前服务重试次数
+  MaxAutoRetriesNextServer: 1 # 切换服务重试次数
+  OkToRetryOnAllOperations: false # 是否对所有的请求方式都重试，只对get请求重试
+zuul:
+  prefix: /api
+  routes:
+    item-service: /item/** # 将商品微服务映射到/item/**    以item/开头的url请求会映射到item-service微服务当中去
+    upload-service: /upload/**
+ly:
+  cors:
+    allowedOrigins: #允许的域名
+      - http://manage.leyou.com
+      - http://www.leyou.com
+      - http://127.0.0.1:9001
+      - http://127.0.0.1:9002
+      - http://localhost:9001
+      - http://localhost:9002
+    allowedCredentials: true #是否ui允许携带cookie信息
+    allowedHeaders: #允许的请求头
+      - "*"
+    allowedMethods: #允许的方式
+      - GET
+      - POST
+      - DELETE
+      - PUT
+      - OPTIONS
+      - HEAD
+    maxAge: 3600 #允许跨域连接时间s
+    filterPath: "/**" #允许哪些方法进行跨域
