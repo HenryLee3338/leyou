@@ -66,4 +66,15 @@ public class BrandController {
         return ResponseEntity.ok().build();//无返回而结果
     }
 
+
+    /**
+     * 根据分类id查询品牌数据
+     * @param id 分类id
+     * @return ResponseEntity<List<BrandDTO>>
+     */
+    @GetMapping(value = "/of/category",name = "根据分类id查询品牌数据")
+    public ResponseEntity<List<BrandDTO>> findBrandListByCategoryId(@RequestParam("id") Long id){
+        List<BrandDTO> brandDTOList = brandService.findBrandListByCategoryId(id);
+        return ResponseEntity.ok(brandDTOList);
+    }
 }

@@ -1,7 +1,10 @@
 package com.leyou.item.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.leyou.item.dto.SpecParamDTO;
 import com.leyou.item.entity.TbSpecParam;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +16,7 @@ import com.leyou.item.entity.TbSpecParam;
  */
 public interface TbSpecParamService extends IService<TbSpecParam> {
 
+    List<SpecParamDTO> findSpecParamByCategoryIdOrGroupId(Long gid, Long cid, Boolean searching);
+
+    void insertSpecParam(SpecParamDTO specParamDTO);
 }

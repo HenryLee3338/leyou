@@ -1,6 +1,8 @@
 package com.leyou.item.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.leyou.common.vo.PageResult;
+import com.leyou.item.dto.SpuDTO;
 import com.leyou.item.entity.TbSpu;
 
 /**

@@ -1,10 +1,19 @@
 package com.leyou.item.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.leyou.common.utils.BeanHelper;
+import com.leyou.common.vo.PageResult;
+import com.leyou.item.dto.SpuDTO;
 import com.leyou.item.entity.TbSpu;
 import com.leyou.item.mapper.TbSpuMapper;
 import com.leyou.item.service.TbSpuService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * <p>
@@ -16,5 +25,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class TbSpuServiceImpl extends ServiceImpl<TbSpuMapper, TbSpu> implements TbSpuService {
+
 
 }

@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.leyou.common.enums.ExceptionEnum;
+import com.leyou.common.exceptions.LyException;
 import com.leyou.common.utils.BeanHelper;
 import com.leyou.common.vo.PageResult;
 import com.leyou.item.dto.BrandDTO;
@@ -17,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
@@ -46,7 +49,6 @@ public class TbBrandServiceImpl extends ServiceImpl<TbBrandMapper, TbBrand> impl
      * @return ResponseEntity<PageResult<BrandDTO>>
      */
     @Override
-    @Transactional
     public PageResult<BrandDTO> findByPage(String key, Integer page, Integer rows, String sortBy, Boolean desc) {
         QueryWrapper<TbBrand> queryWrapper = new QueryWrapper<>();
         Page<TbBrand> page1 = new Page<>(page,rows); //构建了分页
@@ -118,5 +120,24 @@ public class TbBrandServiceImpl extends ServiceImpl<TbBrandMapper, TbBrand> impl
             categoryBrand.setCategoryId(cid);
             categoryBrandService.save(categoryBrand);
         }
+    }
+
+    /**
+     * 根据分类id查询品牌数据
+     * SQL: select b.* from tb_brand b, tb_category_brand cb where b.id = cb.brand_id and cb.category_id = 分类id
+     * @param id 分类id
+     * @return List<BrandDTO>
+     */
+    @Override
+    public List<BrandDTO> findBrandListByCategoryId(Long id) {
+        //1.通过自定义sql查询，getBaseMapper()是获取相对应的mapper
+        List<TbBrand> tbBrandList = this.getBaseMapper().findBrandListByCategoryId(id);
+        //2.判断tbBrandList是否为空
+        if (CollectionUtils.isEmpty(tbBrandList)){
+            throw new LyException(ExceptionEnum.BRAND_NOT_FOUND);
+        }
+        //3.将tbBrandList转换成brandDTOList
+        List<BrandDTO> brandDTOList = BeanHelper.copyWithCollection(tbBrandList, BrandDTO.class);
+        return brandDTOList;
     }
 }

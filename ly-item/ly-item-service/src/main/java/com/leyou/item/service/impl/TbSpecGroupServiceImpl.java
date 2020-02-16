@@ -7,9 +7,11 @@ import com.leyou.common.exceptions.LyException;
 import com.leyou.common.utils.BeanHelper;
 import com.leyou.item.dto.SpecGroupDTO;
 import com.leyou.item.entity.TbSpecGroup;
+import com.leyou.item.entity.TbSpecParam;
 import com.leyou.item.mapper.TbSpecGroupMapper;
 import com.leyou.item.service.TbSpecGroupService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
@@ -44,5 +46,18 @@ public class TbSpecGroupServiceImpl extends ServiceImpl<TbSpecGroupMapper, TbSpe
         //3.将tbSpecGroupList转换成specGroupDTOList
         List<SpecGroupDTO> specGroupDTOList = BeanHelper.copyWithCollection(tbSpecGroupList, SpecGroupDTO.class);
         return specGroupDTOList;
+    }
+
+    /**
+     * 新增规格组
+     * @param specGroupDTO 前台传来的数据
+     */
+    @Override
+    @Transactional
+    public void insertSpecGroup(SpecGroupDTO specGroupDTO) {
+        //1.将specGroupDTO转换成tbSpecGroup
+        TbSpecGroup tbSpecGroup = BeanHelper.copyProperties(specGroupDTO, TbSpecGroup.class);
+        //2.新增规格组
+        this.save(tbSpecGroup);
     }
 }
