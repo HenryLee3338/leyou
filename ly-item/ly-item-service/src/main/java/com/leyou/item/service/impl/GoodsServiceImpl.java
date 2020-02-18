@@ -1,17 +1,24 @@
 package com.leyou.item.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.leyou.common.enums.ExceptionEnum;
+import com.leyou.common.exceptions.LyException;
 import com.leyou.common.utils.BeanHelper;
 import com.leyou.common.vo.PageResult;
 import com.leyou.item.dto.SkuDTO;
 import com.leyou.item.dto.SpuDTO;
+import com.leyou.item.dto.SpuDetailDTO;
 import com.leyou.item.entity.*;
 import com.leyou.item.service.*;
+import com.netflix.discovery.converters.Auto;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -30,7 +37,10 @@ public class GoodsServiceImpl implements GoodsService {
     private TbBrandService brandService;
 
     @Autowired
-    private TbSpuDetailService tbSpuDetailService;
+    private TbSpuDetailService spuDetailService;
+
+    @Autowired
+    private TbSkuService skuService;
 
     @Autowired
     private TbSkuService tbSkuService;
@@ -74,6 +84,7 @@ public class GoodsServiceImpl implements GoodsService {
      * @param spuDTO 前台传来的数据
      */
     @Override
+    @Transactional
     public void saveGoods(SpuDTO spuDTO) {
         //1.保存spu数据
         TbSpu tbSpu = BeanHelper.copyProperties(spuDTO, TbSpu.class);
@@ -81,14 +92,107 @@ public class GoodsServiceImpl implements GoodsService {
         //2.保存tbSpuDetail数据
         TbSpuDetail tbSpuDetail = BeanHelper.copyProperties(spuDTO.getSpuDetail(), TbSpuDetail.class);
         tbSpuDetail.setSpuId(tbSpu.getId());//tbSpuDetail中没有tbSpu的id
-        tbSpuDetailService.save(tbSpuDetail);
+        spuDetailService.save(tbSpuDetail);
         //3.保存tbSku数据
         List<TbSku> tbSkus = BeanHelper.copyWithCollection(spuDTO.getSkus(), TbSku.class);
         for (TbSku sku : tbSkus) {
             sku.setSpuId(tbSpu.getId());//sku中没有tbSpu的id
         }
-        tbSkuService.saveBatch(tbSkus);//批量保存，执行的是一个sql语句
+        skuService.saveBatch(tbSkus);//批量保存，执行的是一个sql语句
     }
+
+    /**
+     * 修改商品信息
+     * 需要涉及三张表的数据 tb_spu, tb_spu_detail, tb_sku
+     * spu和spuDetail直接更新，sku先删除后新增
+     * @param spuDTO 前台传来的数据
+     */
+    @Override
+    @Transactional
+    public void updateGoods(SpuDTO spuDTO) {
+        //1.修改spu数据
+        TbSpu tbSpu = BeanHelper.copyProperties(spuDTO, TbSpu.class);
+        spuService.updateById(tbSpu);
+        //2.修改tbSpuDetail数据
+        TbSpuDetail tbSpuDetail = BeanHelper.copyProperties(spuDTO.getSpuDetail(), TbSpuDetail.class);
+        spuDetailService.updateById(tbSpuDetail);
+        //3.修改tbSku数据，先删除后新增
+        //删除
+        QueryWrapper<TbSku> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(TbSku::getSpuId,tbSpu.getId());
+        skuService.remove(queryWrapper);
+        //新增
+        List<TbSku> tbSkus = BeanHelper.copyWithCollection(spuDTO.getSkus(), TbSku.class);
+        for (TbSku sku : tbSkus) {
+            sku.setSpuId(tbSpu.getId());//sku中没有tbSpu的id
+        }
+        skuService.saveBatch(tbSkus);//批量保存，执行的是一个sql语句
+    }
+
+    /**
+     * 修改商品上下架
+     * @param id 商品id
+     * @param saleable 上架还是下架
+     */
+    @Override
+    @Transactional
+    public void updateSaleable(Long id, Boolean saleable) {
+        //1.修改saleable状态
+        UpdateWrapper<TbSpu> updateWrapper = new UpdateWrapper();
+        updateWrapper.lambda().eq(TbSpu::getId,id);
+        updateWrapper.lambda().set(TbSpu::getSaleable,saleable);
+        boolean isUpdate = spuService.update(updateWrapper);
+        if (!isUpdate){//如果失败
+            throw new LyException(ExceptionEnum.UPDATE_OPERATION_FAIL);
+        }
+        //2.修改spu下的sku的enable状态
+        UpdateWrapper<TbSku> updateWrapper1 = new UpdateWrapper<>();
+        updateWrapper1.lambda().eq(TbSku::getSpuId,id);
+        updateWrapper1.lambda().set(TbSku::getEnable,saleable);
+        boolean isUpdate1 = skuService.update(updateWrapper1);
+        if (!isUpdate1){
+            throw new LyException(ExceptionEnum.UPDATE_OPERATION_FAIL);
+        }
+    }
+
+    /**
+     *  根据spuId查询SpuDetail
+     * @param id spu的id
+     * @return SpuDetailDTO
+     */
+    @Override
+    public SpuDetailDTO findSpuDetailBySpuId(Long id) {
+        //1.查询
+        //注意：根据id查询的时候，需要在对应的表中对应的属性上加一个@TableId注解
+        TbSpuDetail tbSpuDetail = spuDetailService.getById(id);
+        if (tbSpuDetail == null){
+            throw new LyException(ExceptionEnum.GOODS_NOT_FOUND);
+        }
+        //2.将tbSpuDetail转换成spuDetailDTO
+        SpuDetailDTO spuDetailDTO = BeanHelper.copyProperties(tbSpuDetail, SpuDetailDTO.class);
+        return spuDetailDTO;
+    }
+
+    /**
+     * 根据spuId查询Sku集合
+     * @param id spuId
+     * @return List<SkuDTO>
+     */
+    @Override
+    public List<SkuDTO> findSkuListBySpuId(Long id) {
+        //1.查询
+        QueryWrapper<TbSku> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(TbSku::getSpuId,id);
+        List<TbSku> tbSkuList = tbSkuService.list(queryWrapper);
+        if (CollectionUtils.isEmpty(tbSkuList)){
+            throw new LyException(ExceptionEnum.GOODS_NOT_FOUND);
+        }
+        //2.转换
+        List<SkuDTO> skuDTOList = BeanHelper.copyWithCollection(tbSkuList, SkuDTO.class);
+        return skuDTOList;
+    }
+
+
 
     /**
      * 根据品牌id和分类id查询品牌名称和分类名称
