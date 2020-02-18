@@ -8,6 +8,9 @@ eureka:
     service-url:
       defaultZone: http://127.0.0.1:10086/eureka
     registry-fetch-interval-seconds: 5  #间隔多久去拉取服务注册信息，默认为30秒
+  instance:
+    prefer-ip-address: true #显示ip而不是计算机名字
+    instance-id: ${spring.cloud.client.ip-address}:${server.port} #提取本机的ip
 hystrix:
   command:
     default:
@@ -26,7 +29,7 @@ zuul:
   routes:
     item-service: /item/** # 将商品微服务映射到/item/**    以item/开头的url请求会映射到item-service微服务当中去
     upload-service: /upload/**
-    search-service: /service/**
+    search-service: /search/**
 ly:
   cors:
     allowedOrigins: #允许的域名

@@ -24,4 +24,6 @@ public interface TbBrandService extends IService<TbBrand> {
     void updateBrand(BrandDTO brand, List<Long> cids);
 
     List<BrandDTO> findBrandListByCategoryId(Long id);
+
+    List<BrandDTO> findBrandListByBrandIdList(List<Long> ids);
 }

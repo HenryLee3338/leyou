@@ -12,7 +12,9 @@ import com.leyou.item.service.TbCategoryService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -62,6 +64,26 @@ public class TbCategoryServiceImpl extends ServiceImpl<TbCategoryMapper, TbCateg
         }
         //3.将tbCategory转换成CategoryDTO
         List<CategoryDTO> categoryDTOList = BeanHelper.copyWithCollection(tbCategoryList, CategoryDTO.class);
+        return categoryDTOList;
+    }
+
+    /**
+     * 根据分类id集合查询分类集合
+     * @param ids 分类id的集合
+     * @return List<CategoryDTO> 分类集合
+     */
+    @Override
+    public List<CategoryDTO> findCategoryListByCategoryIdList(List<Long> ids) {
+        //1.查询
+        Collection<TbCategory> categoryCollection = this.listByIds(ids);
+        if (CollectionUtils.isEmpty(categoryCollection)){
+            throw new LyException(ExceptionEnum.CATEGORY_NOT_FOUND);
+        }
+        //2.转换
+        //因为这里copyProperties需要参数才行，所以没法用::的形式
+        List<CategoryDTO> categoryDTOList = categoryCollection.stream().map(tbCategory -> {
+            return BeanHelper.copyProperties(tbCategory, CategoryDTO.class);
+        }).collect(Collectors.toList());
         return categoryDTOList;
     }
 }

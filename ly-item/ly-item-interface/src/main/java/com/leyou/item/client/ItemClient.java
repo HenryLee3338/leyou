@@ -65,4 +65,20 @@ public interface ItemClient {
             @RequestParam(value = "cid",required = false) Long cid,
             @RequestParam(value = "searching",required = false) Boolean searching
     );
+
+    /**
+     * 通过品牌id集合查询品牌集合
+     * @param ids 这是一个品牌id的集合
+     * @return ResponseEntity<List<BrandDTO>> 返回一个品牌集合
+     */
+    @GetMapping(value = "/brand/list",name = "通过品牌id集合查询品牌集合")
+    public List<BrandDTO> findBrandListByBrandIdList(@RequestParam("ids") List<Long> ids);
+
+    /**
+     * 根据分类id集合查询分类集合
+     * @param ids 分类id的集合
+     * @return ResponseEntity<List<CategoryDTO>> 分类集合
+     */
+    @GetMapping(value = "/category/list",name = "根据分类id集合查询分类集合")
+    public List<CategoryDTO> findCategoryListByCategoryIdList(@RequestParam(name = "ids") List<Long> ids);
 }

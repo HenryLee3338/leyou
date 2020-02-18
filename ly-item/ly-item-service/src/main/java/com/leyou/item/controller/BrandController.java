@@ -77,4 +77,15 @@ public class BrandController {
         List<BrandDTO> brandDTOList = brandService.findBrandListByCategoryId(id);
         return ResponseEntity.ok(brandDTOList);
     }
+
+    /**
+     * 通过品牌id集合查询品牌集合
+     * @param ids 这是一个品牌id的集合
+     * @return ResponseEntity<List<BrandDTO>> 返回一个品牌集合
+     */
+    @GetMapping(value = "/list",name = "通过品牌id集合查询品牌集合")
+    public ResponseEntity<List<BrandDTO>> findBrandListByBrandIdList(@RequestParam("ids") List<Long> ids){
+        List<BrandDTO> brandList = brandService.findBrandListByBrandIdList(ids);
+        return ResponseEntity.ok(brandList);
+    }
 }

@@ -40,4 +40,15 @@ public class CategoryController {
         List<CategoryDTO> categoryDTOList = categoryService.findCategoryListByBrandId(id);
         return ResponseEntity.ok(categoryDTOList);
     }
+
+    /**
+     * 根据分类id集合查询分类集合
+     * @param ids 分类id的集合
+     * @return ResponseEntity<List<CategoryDTO>> 分类集合
+     */
+    @GetMapping(value = "/list",name = "根据分类id集合查询分类集合")
+    public ResponseEntity<List<CategoryDTO>> findCategoryListByCategoryIdList(@RequestParam(name = "ids") List<Long> ids){
+        List<CategoryDTO> categoryDTOList = categoryService.findCategoryListByCategoryIdList(ids);
+        return ResponseEntity.ok(categoryDTOList);
+    }
 }
