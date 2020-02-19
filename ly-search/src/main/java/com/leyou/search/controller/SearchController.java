@@ -32,7 +32,7 @@ public class SearchController {
     }
 
     /**
-     * 通过过滤条件过滤搜索对应的商品
+     * 查询搜索对应的过滤条件
      * @param searchRequest 查询需求
      * @return <PageResult<GoodsDTO>>
      */

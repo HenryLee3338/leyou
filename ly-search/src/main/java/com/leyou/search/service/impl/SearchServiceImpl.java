@@ -13,6 +13,7 @@ import com.leyou.search.dto.SearchRequest;
 import com.leyou.search.entity.Goods;
 import com.leyou.search.service.SearchService;
 import org.apache.commons.lang.StringUtils;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
@@ -20,6 +21,7 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.aggregation.AggregatedPage;
 import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
@@ -132,7 +134,7 @@ public class SearchServiceImpl implements SearchService {
      * 根据查询的需求分页查询对应的商品
      * 主要使用SpringDataElasticSearch来查询，结合ES原生查询
      * 根据关键字match查询，查询结果只要id，subTitle，skus，和GoodsDTO相对应
-     * @param searchRequest 查询需求 包含 filterMap:{}，key:"手机"，page:1 三个属性
+     * @param searchRequest 查询需求 包含 filterMap:{"品牌":8557,"内存":6GB}，key:"手机"，page:1 三个属性
      * @return <PageResult<GoodsDTO>>
      *------------------------------------------------------------------------------------------------------------------
      * 参数格式：
@@ -181,6 +183,9 @@ public class SearchServiceImpl implements SearchService {
         buildBasicQuery(searchRequest, queryBuilder);
         //3.设置分页起始位置(不是当前页码)和每页显示条数
         queryBuilder.withPageable(PageRequest.of(page - 1,size));//这里的起始位置是从0开始的，page - 1
+//        如果需要排序：
+//        PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.Direction.DESC, "createTime");//根据创建时间降序，新品按钮
+//        queryBuilder.withPageable(pageRequest);
         //4.处理查询得到的数据
         AggregatedPage<Goods> aggregatedPage = esTemplate.queryForPage(queryBuilder.build(), Goods.class);
         List<Goods> goodsList = aggregatedPage.getContent();//当前页的数据
@@ -195,7 +200,8 @@ public class SearchServiceImpl implements SearchService {
     }
 
     /**
-     * 通过过滤条件过滤搜索对应的商品
+     * 查询搜索对应的过滤条件
+     * 因为参数相关的东西要通过分类id查询，所以先把品牌和分类查出来，然后再去差参数
      * @param searchRequest 查询需求
      * @return <PageResult<GoodsDTO>>
      *------------------------------------------------------------------------------------------------------------------
@@ -221,7 +227,20 @@ public class SearchServiceImpl implements SearchService {
      *         "field": "brandId",
      *         "size": 20
      *       }
-     *     }
+     *     },
+     *         "CPU核数AGG": {
+     *       "terms": {
+     *         "field": "specs.CPU核数",
+     *         "size": 20
+     *       }
+     *     },
+     *     "后置摄像头AGG ":{
+     *       "terms": {
+     *         "field": "specs.后置摄像头",
+     *         "size": 20
+     *       }
+     *     },
+     *     .....
      *   }
      * }
      * 通过kibana查询的结果：
@@ -240,7 +259,23 @@ public class SearchServiceImpl implements SearchService {
      *
      *         },
      *         .....
-     *      }
+     *      },
+     *       "CPU核数AGG": {
+     *       "doc_count_error_upper_bound": 0,
+     *       "sum_other_doc_count": 0,
+     *       "buckets": [
+     *         {
+     *           "key": "八核",
+     *           "doc_count": 131
+     *         },
+     *         {
+     *           "key": "四核",
+     *           "doc_count": 15
+     *         },
+     *         .....
+     *       ]
+     *     },
+     *     .....
      *   }
      *------------------------------------------------------------------------------------------------------------------
      *要返回的结果：
@@ -261,7 +296,11 @@ public class SearchServiceImpl implements SearchService {
      *       "image": "http://img10.360buyimg.com/popshop/jfs/t5662/36/8888655583/7806/1c629c01/598033b4Nd6055897.jpg",
      *       "letter": "H"
      *     }
-     *   ]
+     *   ],
+     *    "操作系统": [
+     *    "Android"
+     *   ],
+     *   ......
      * }
      */
     @Override
@@ -281,16 +320,17 @@ public class SearchServiceImpl implements SearchService {
         //2.设置match查询条件
         buildBasicQuery(searchRequest, queryBuilder);
         //3.设置分页起始位置(不是当前页码)和每页显示条数
-        queryBuilder.withPageable(PageRequest.of(page - 1,1));//不需要查询结果中的字段,这里size写0回报错，需要写1
-        //4.构建聚合条件
+        queryBuilder.withPageable(PageRequest.of(page - 1,1));//不需要查询结果中的字段,这里size写0会报错，需要写1
+        //==============================================================================================================
+        //4.构建品牌和分类的聚合条件
         queryBuilder.addAggregation(AggregationBuilders.terms("brandAgg").field("brandId").size(20));//品牌聚合
         queryBuilder.addAggregation(AggregationBuilders.terms("categoryAgg").field("categoryId").size(20));//分类聚合
-        //5.处理查询得到的数据
+        //5.处理品牌和分类的数据
         AggregatedPage<Goods> aggregatedPage = esTemplate.queryForPage(queryBuilder.build(), Goods.class);
         Aggregations aggregations = aggregatedPage.getAggregations();//聚合的结果在aggregations字段里面
-        //5.1.从聚合结果中获取品牌
-        Terms brandTerms = aggregations.get("brandAgg");//这里的参数要和上面的brandAgg一样
-        List<? extends Terms.Bucket> brandBuckets = brandTerms.getBuckets();
+        //5.1.从聚合结果中获取品牌--------------------------------------------------------------------------------------
+        Terms brandTerms = aggregations.get("brandAgg");//这里的参数要和上面的brandAgg一样,用一个子接口Terms来接受
+        List<? extends Terms.Bucket> brandBuckets = brandTerms.getBuckets();//buckets是一个集合
         //buckets是一个集合，里面有聚合好的组和组中的数量，现在需要的是聚合好的组(brandId)的一个集合
         List<Long> brandIdList = brandBuckets.stream().map(Terms.Bucket::getKeyAsNumber).//将每一个bucket里的key(brandId)取出来
                 map(Number::longValue).//将品牌id转换成Long类型
@@ -298,9 +338,9 @@ public class SearchServiceImpl implements SearchService {
         //通过Feign调用根据品牌id集合查询品牌对象集合的方法
         List<BrandDTO> brandList = itemClient.findBrandListByBrandIdList(brandIdList);
         resultMap.put("品牌",brandList);
-        //5.2.从聚合结果中获取分类
+        //5.2.从聚合结果中获取分类--------------------------------------------------------------------------------------
         Terms categoryTerms = aggregations.get("categoryAgg");//这里的参数要和上面的categoryAgg一样
-        List<? extends Terms.Bucket> categoryBuckets = categoryTerms.getBuckets();
+        List<? extends Terms.Bucket> categoryBuckets = categoryTerms.getBuckets();//buckets是一个集合
         //buckets是一个集合，里面有聚合好的组和组中的数量，现在需要的是聚合好的组(categoryId)的一个集合
         List<Long> categoryIdList = categoryBuckets.stream().map(Terms.Bucket::getKeyAsNumber).//将每一个bucket里的key(categoryId)取出来
                 map(Number::longValue).//将分类id转换成Long类型
@@ -308,7 +348,41 @@ public class SearchServiceImpl implements SearchService {
         //通过Feign调用根据分类id集合查询分类对象集合的方法
         List<CategoryDTO> categoryList = itemClient.findCategoryListByCategoryIdList(categoryIdList);
         resultMap.put("分类",categoryList);
+        //==============================================================================================================
+        //6.聚合spec规格参数
+        // 因为参数相关的东西要通过分类id查询，所以先把品牌和分类查出来，然后再去聚合参数
+        if (categoryIdList != null && categoryIdList.size() > 0){
+            //6.1根据分类查询需要搜索的规格参数-------------------------------------------------------------------------
+            Long categoryId = categoryIdList.get(0);//取分类的第一个去查询规格参数
+            List<SpecParamDTO> paramList = itemClient.findSpecParamByCategoryIdOrGroupId(null, categoryId, true);
+            //6.2构建spec规格参数的聚合条件-----------------------------------------------------------------------------
+            NativeSearchQueryBuilder paramQueryBuilder = new NativeSearchQueryBuilder();//这是ES原生查询的对象
+            paramQueryBuilder.withSourceFilter(new FetchSourceFilter(null,null));//不需要显示任何字段,只要聚合结果
+            buildBasicQuery(searchRequest,paramQueryBuilder);//执行基本查询
+            paramQueryBuilder.withPageable(PageRequest.of(0,1));//不需要查询结果中的字段,这里size写0会报错，需要写1
+            for (SpecParamDTO specParam : paramList) {
+                //构建每个参数的聚合条件
+                //"field": "specs.CPU核数"
+                String paramName = specParam.getName();
+                paramQueryBuilder.addAggregation(AggregationBuilders.terms(paramName + "Agg").field("specs." + paramName).size(20));
+            }
+            //6.3从结果中获取聚合后的参数-------------------------------------------------------------------------------
+            AggregatedPage<Goods> aggParamPage = esTemplate.queryForPage(paramQueryBuilder.build(), Goods.class);
+            Aggregations paramPageAggregations = aggParamPage.getAggregations();
+            for (SpecParamDTO specParam : paramList) {
+                //取出每一个聚合
+                String paramName = specParam.getName();
+                Terms terms = paramPageAggregations.get(paramName + "Agg");//用一个子接口Terms来接受
+                List<? extends Terms.Bucket> paramBuckets = terms.getBuckets();//buckets是一个集合
+                List<String> paramAggList = paramBuckets.stream().// 一个bucket: {"key": "八核","doc_count": 131}
+                        map(Terms.Bucket::getKeyAsString)//将buckets里的每一个bucket的key取出来
+                        .collect(Collectors.toList());//转成一个list集合
+                resultMap.put(paramName,paramAggList);//放入返回的map当中
+            }
+        }
+
         return resultMap;
+
     }
 
 
@@ -354,6 +428,24 @@ public class SearchServiceImpl implements SearchService {
 
     //构建queryBuilder的基本查询
     private void buildBasicQuery(SearchRequest searchRequest, NativeSearchQueryBuilder queryBuilder) {
-        queryBuilder.withQuery(QueryBuilders.matchQuery("all", searchRequest.getKey()));
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();//使用布尔查询
+        boolQuery.must(QueryBuilders.matchQuery("all",searchRequest.getKey()));//布尔查询里要有match查询
+        Map<String, Object> filterMap = searchRequest.getFilterMap();
+        if (filterMap != null){
+            //遍历filterMap,map里有多少个key,就应该有多少个filter
+            for (String key : filterMap.keySet()) {
+                if (key.equals("品牌")){//如果是品牌的话，转成brandId,
+                    boolQuery.filter(QueryBuilders.termQuery("brandId",filterMap.get(key)));
+                }else if (key.equals("分类")){//如果是分类的话，转成categoryId
+                    boolQuery.filter(QueryBuilders.termQuery("categoryId",filterMap.get(key)));
+                }else {//如果是参数的话，要加上"specs."
+                    boolQuery.filter(QueryBuilders.termQuery("specs." + key,filterMap.get(key)));
+                }
+            }
+        }
+
+
+
+        queryBuilder.withQuery(boolQuery);
     }
 }
