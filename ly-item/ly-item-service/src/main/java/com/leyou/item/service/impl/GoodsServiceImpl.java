@@ -15,6 +15,7 @@ import com.leyou.item.entity.*;
 import com.leyou.item.service.*;
 import com.netflix.discovery.converters.Auto;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,10 @@ import org.springframework.util.CollectionUtils;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.leyou.common.constants.RocketMQConstants.TAGS.ITEM_DOWN_TAGS;
+import static com.leyou.common.constants.RocketMQConstants.TAGS.ITEM_UP_TAGS;
+import static com.leyou.common.constants.RocketMQConstants.TOPIC.ITEM_TOPIC_NAME;
 
 @Service
 public class GoodsServiceImpl implements GoodsService {
@@ -44,6 +49,9 @@ public class GoodsServiceImpl implements GoodsService {
 
     @Autowired
     private TbSkuService tbSkuService;
+
+    @Autowired
+    private RocketMQTemplate rocketMQTemplate;
 
     /**
      * 分页查询spu
@@ -167,6 +175,10 @@ public class GoodsServiceImpl implements GoodsService {
         if (!isUpdate1){
             throw new LyException(ExceptionEnum.UPDATE_OPERATION_FAIL);
         }
+        //3.向MQ发送消息
+        String tag = saleable?ITEM_UP_TAGS:ITEM_DOWN_TAGS; //如果saleable是true，上架，反之下架
+        rocketMQTemplate.convertAndSend(ITEM_TOPIC_NAME + ":" + tag,id);//topic:tag  一级分类:二级分类
+        System.out.println("上下架成功,MQ消息以发送" + tag);
     }
 
     /**

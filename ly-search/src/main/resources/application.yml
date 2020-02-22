@@ -20,3 +20,5 @@ ribbon:
   MaxAutoRetries: 0 # 当前服务器的重试次数
   MaxAutoRetriesNextServer: 1 # 重试多少次服务
   OkToRetryOnAllOperations: false # 是否对所有的请求方式都重试 GET PUT DELETE POST
+rocketmq:
+  name-server: 127.0.0.1:9876

@@ -5,7 +5,12 @@ import com.leyou.item.dto.*;
 import com.leyou.page.service.PageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +20,9 @@ public class PageServiceImpl implements PageService {
 
     @Autowired
     private ItemClient itemClient;
+
+    @Autowired
+    private TemplateEngine templateEngine;
 
     /**
      * 展示商品详细页面
@@ -53,5 +61,35 @@ public class PageServiceImpl implements PageService {
         List<SpecGroupDTO> specGroupWithParams = itemClient.findSpecGroupWithParamsByCategoryId(spu.getCid3());
         dataMap.put("specs",specGroupWithParams);
         return dataMap;
+    }
+
+    /**
+     * 删除对应的html页面
+     * @param spuId spu的id
+     */
+    @Override
+    public void removeHtml(Long spuId) {
+        File file = new File("E:\\Develop\\nginx-1.16.0\\html\\item\\"+ spuId +".html");
+        file.delete();
+        System.out.println("静态页面删除成功");
+    }
+
+    /**
+     * 创建对应的html页面
+     * @param spuId spu的id
+     */
+    @Override
+    public void createHtml(Long spuId) {
+//        - Context：运行上下文             数据
+//        - TemplateResolver：模板解析器   模板文件
+//        - TemplateEngine：模板引擎  把数据和模板文件结合生成一个html文件
+        Context context = new Context();
+        context.setVariables(this.buildDataBySPUId(spuId));
+        try(PrintWriter writer = new PrintWriter("E:\\Develop\\nginx-1.16.0\\html\\item\\"+ spuId +".html")) {  //流的关闭是自动的
+            templateEngine.process("item",context,writer);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        System.out.println("静态页面创建成功");
     }
 }

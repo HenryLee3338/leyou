@@ -11,6 +11,7 @@ import com.leyou.item.dto.*;
 import com.leyou.search.dto.GoodsDTO;
 import com.leyou.search.dto.SearchRequest;
 import com.leyou.search.entity.Goods;
+import com.leyou.search.repository.GoodsRepository;
 import com.leyou.search.service.SearchService;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -43,6 +44,9 @@ public class SearchServiceImpl implements SearchService {
 
     @Autowired
     private ElasticsearchTemplate esTemplate; //这是SpringDataElasticSearch查询的对象
+
+    @Autowired
+    private GoodsRepository goodsRepository;
 
     /**
      * 在es中创建good
@@ -383,6 +387,38 @@ public class SearchServiceImpl implements SearchService {
 
         return resultMap;
 
+    }
+
+    /**
+     * 在ES中创建对应的商品索引
+     * @param spuId spu的id
+     */
+    @Override
+    public void createGoods(Long spuId) {
+        //1.根据spuId查询spu对象，构建goods
+        SpuDTO spu = itemClient.findSpuBySpuId(spuId);
+        //此时spu中的brandName和categoryName为空，itemClient.findSpuByPage()方法里设置了，但是itemClient.findSpuBySpuId(spuId)里没有设置
+        BrandDTO brand = itemClient.findBrandByBrandId(spu.getBrandId());//得到brand
+        spu .setBrandName(brand.getName());//设置brandName
+        List<CategoryDTO> categoryList = itemClient.findCategoryListByCategoryIdList(spu.getCategoryIds());//得到categoryList集合
+        String categoryNames = categoryList.stream().map(CategoryDTO::getName).collect(Collectors.joining("/"));//取出一个categoryNames的集合
+        spu.setCategoryName(categoryNames);//设置categoryName;
+        //2.根据Spu得到Goods
+        Goods goods = this.buildGoods(spu);
+        //3.存储
+        goodsRepository.save(goods);
+
+        System.out.println("索引数据创建成功");
+    }
+
+    /**
+     * 在ES中删除对应的商品索引
+     * @param spuId spu的id
+     */
+    @Override
+    public void removeGoods(Long spuId) {
+        goodsRepository.deleteById(spuId);
+        System.out.println("索引数据删除成功");
     }
 
 

@@ -13,3 +13,5 @@ eureka:
   instance:
     prefer-ip-address: true #显示ip而不是计算机名字
     instance-id: ${spring.cloud.client.ip-address}:${server.port} #提取本机的ip
+rocketmq:
+  name-server: 127.0.0.1:9876

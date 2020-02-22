@@ -16,4 +16,8 @@ public interface SearchService {
     PageResult<GoodsDTO> findGoodsByPage(SearchRequest searchRequest);
 
     Map<String, List<?>> filter(SearchRequest searchRequest);
+
+    void createGoods(Long spuId);
+
+    void removeGoods(Long spuId);
 }
