@@ -130,6 +130,20 @@ public class GoodsServiceImpl implements GoodsService {
     }
 
     /**
+     * 根据spuId查询Spu对象
+     * @param id
+     * @return ResponseEntity<SpuDTO>
+     */
+    @Override
+    public SpuDTO findSpuBySpuid(Long id) {
+        //1.查询
+        TbSpu tbSpu = spuService.getById(id);
+        //2.转换
+        SpuDTO spuDTO = BeanHelper.copyProperties(tbSpu, SpuDTO.class);
+        return spuDTO;
+    }
+
+    /**
      * 修改商品上下架
      * @param id 商品id
      * @param saleable 上架还是下架

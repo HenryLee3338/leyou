@@ -88,4 +88,16 @@ public class BrandController {
         List<BrandDTO> brandList = brandService.findBrandListByBrandIdList(ids);
         return ResponseEntity.ok(brandList);
     }
+
+    /**
+     * 通过品牌id查询品牌
+     * @param id 这是一个品牌id  从url路径占位符中取参数必须要用一个@PathVariable注解才能取到
+     * @return ResponseEntity<BrandDTO> 返回一个品牌集合
+     */
+    @GetMapping(value = "/{id}",name = "通过品牌id查询品牌")
+    public ResponseEntity<BrandDTO> findBrandByBrandId(@PathVariable("id") Long id){
+        BrandDTO brandDTO = brandService.findBrandByBrandId(id);
+        return ResponseEntity.ok(brandDTO);
+    }
+
 }

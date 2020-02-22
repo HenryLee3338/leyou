@@ -169,4 +169,18 @@ public class TbBrandServiceImpl extends ServiceImpl<TbBrandMapper, TbBrand> impl
 
         return brandDTOList;
     }
+
+    /**
+     * 通过品牌id查询品牌
+     * @param id 这是一个品牌id
+     * @return ResponseEntity<BrandDTO> 返回一个品牌集合
+     */
+    @Override
+    public BrandDTO findBrandByBrandId(Long id) {
+        //1.查询
+        TbBrand tbBrand = this.getById(id);
+        //2.转换
+        BrandDTO brandDTO = BeanHelper.copyProperties(tbBrand, BrandDTO.class);
+        return brandDTO;
+    }
 }

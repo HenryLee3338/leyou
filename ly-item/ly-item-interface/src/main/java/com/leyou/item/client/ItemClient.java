@@ -81,4 +81,28 @@ public interface ItemClient {
      */
     @GetMapping(value = "/category/list",name = "根据分类id集合查询分类集合")
     public List<CategoryDTO> findCategoryListByCategoryIdList(@RequestParam(name = "ids") List<Long> ids);
+
+    /**
+     * 根据spuId查询Spu对象
+     * @param id 从url路径占位符中取参数必须要用一个@PathVariable注解才能取到
+     * @return ResponseEntity<SpuDTO>
+     */
+    @GetMapping(value = "/spu/{id}",name = "根据spuId查询Spu对象")
+    public SpuDTO findSpuBySpuId(@PathVariable("id") Long id);
+
+    /**
+     * 通过品牌id查询品牌
+     * @param id 这是一个品牌id  从url路径占位符中取参数必须要用一个@PathVariable注解才能取到
+     * @return ResponseEntity<BrandDTO> 返回一个品牌集合
+     */
+    @GetMapping(value = "/brand/{id}",name = "通过品牌id查询品牌")
+    public BrandDTO findBrandByBrandId(@PathVariable("id") Long id);
+
+    /**
+     * 根据分类id查询规格组参数数据
+     * @param id 分类id
+     * @return  List<SpecGroupDTO>
+     */
+    @GetMapping(value = "/spec/of/category",name = "根据分类id查询规格组参数数据")
+    public List<SpecGroupDTO> findSpecGroupWithParamsByCategoryId(@RequestParam(value = "id") Long id);
 }

@@ -91,6 +91,17 @@ public class GoodsController {
         return ResponseEntity.ok(skuDTOList);
     }
 
+    /**
+     * 根据spuId查询Spu对象
+     * @param id 从url路径占位符中取参数必须要用一个@PathVariable注解才能取到
+     * @return ResponseEntity<SpuDTO>
+     */
+    @GetMapping(value = "/spu/{id}",name = "根据spuId查询Spu对象")
+    public ResponseEntity<SpuDTO> findSpuBySpuId(@PathVariable("id") Long id){
+        SpuDTO spuDTO = goodsService.findSpuBySpuid(id);
+        return ResponseEntity.ok(spuDTO);
+    }
+
 
 
 }

@@ -19,4 +19,6 @@ public interface TbSpecGroupService extends IService<TbSpecGroup> {
     List<SpecGroupDTO> findSpecGroupByCategoryId(Long id);
 
     void insertSpecGroup(SpecGroupDTO specGroupDTO);
+
+    List<SpecGroupDTO> findSpecGroupWithParamsByCategoryId(Long id);
 }

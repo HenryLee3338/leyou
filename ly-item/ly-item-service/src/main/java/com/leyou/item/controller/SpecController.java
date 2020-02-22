@@ -72,4 +72,15 @@ public class SpecController {
         return ResponseEntity.ok().build();//无返回而结果
     }
 
+    /**
+     * 根据分类id查询规格组参数数据
+     * @param id 分类id
+     * @return  List<SpecGroupDTO>
+     */
+    @GetMapping(value = "/of/category",name = "根据分类id查询规格组参数数据")
+    public ResponseEntity<List<SpecGroupDTO>> findSpecGroupWithParamsByCategoryId(@RequestParam(value = "id") Long id){
+        List<SpecGroupDTO> specGroupDTOList = specGroupService.findSpecGroupWithParamsByCategoryId(id);
+        return ResponseEntity.ok(specGroupDTOList);
+    }
+
 }

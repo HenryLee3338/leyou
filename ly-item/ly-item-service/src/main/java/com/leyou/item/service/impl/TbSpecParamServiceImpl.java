@@ -5,7 +5,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.leyou.common.enums.ExceptionEnum;
 import com.leyou.common.exceptions.LyException;
 import com.leyou.common.utils.BeanHelper;
+import com.leyou.item.dto.SpecGroupDTO;
 import com.leyou.item.dto.SpecParamDTO;
+import com.leyou.item.entity.TbSpecGroup;
 import com.leyou.item.entity.TbSpecParam;
 import com.leyou.item.mapper.TbSpecParamMapper;
 import com.leyou.item.service.TbSpecParamService;
@@ -73,4 +75,6 @@ public class TbSpecParamServiceImpl extends ServiceImpl<TbSpecParamMapper, TbSpe
         //2.将参数信息存储到参数表
         this.save(tbSpecParam);
     }
+
+
 }
