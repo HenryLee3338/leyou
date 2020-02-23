@@ -30,6 +30,7 @@ zuul:
     item-service: /item/** # 将商品微服务映射到/item/**    以item/开头的url请求会映射到item-service微服务当中去
     upload-service: /upload/**
     search-service: /search/**
+    user-service: /user/**
 ly:
   cors:
     allowedOrigins: #允许的域名

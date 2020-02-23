@@ -1,0 +1,25 @@
+server:
+  port: 8085
+spring:
+  application:
+    name: user-service
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql:///leyou?characterEncoding=UTF-8
+    username: root
+    password: root
+#myBatis-plus
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #输出sql日志
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:10086/eureka
+    registry-fetch-interval-seconds: 10
+    instance:
+      prefer-ip-address: true #显示ip而不是计算机名字
+      instance-id: ${spring.cloud.client.ip-address}:${server.port} #提取本机的ip
+logging:
+  level:
+    com.leyou: debug
