@@ -13,6 +13,7 @@ public enum  ExceptionEnum {
     INVALID_PARAM_ERROR(400, "无效的请求参数！"),
     INVALID_PHONE_NUMBER(400, "无效的手机号码"),
     INVALID_VERIFY_CODE(400, "验证码错误！"),
+    TIME_OUT_CODE(400, "验证码超时！"),
     INVALID_USERNAME_PASSWORD(400, "无效的用户名和密码！"),
     INVALID_SERVER_ID_SECRET(400, "无效的服务id和密钥！"),
     INVALID_NOTIFY_PARAM(400, "回调参数有误！"),

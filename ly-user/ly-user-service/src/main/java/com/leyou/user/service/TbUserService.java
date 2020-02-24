@@ -1,6 +1,7 @@
 package com.leyou.user.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.leyou.user.dto.UserDTO;
 import com.leyou.user.entity.TbUser;
 
 
@@ -14,4 +15,11 @@ import com.leyou.user.entity.TbUser;
  */
 public interface TbUserService extends IService<TbUser> {
 
+    Boolean checkData(String data, Integer type);
+
+    void sendCode(String phone);
+
+    void registry(TbUser user, String code);
+
+    UserDTO queryUserByUsernameAndPassword(String username, String password);
 }

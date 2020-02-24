@@ -1,4 +1,4 @@
-package com.leyou.sms.constants;
+package com.leyou.common.constants;
 public final class SmsConstants {
     /**
      * 请求参数

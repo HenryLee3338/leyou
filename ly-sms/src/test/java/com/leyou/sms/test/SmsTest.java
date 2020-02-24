@@ -13,8 +13,7 @@ import java.util.Map;
 
 import static com.leyou.common.constants.RocketMQConstants.TAGS.VERIFY_CODE_TAGS;
 import static com.leyou.common.constants.RocketMQConstants.TOPIC.SMS_TOPIC_NAME;
-import static com.leyou.sms.constants.SmsConstants.*;
-import static com.leyou.sms.constants.SmsConstants.SMS_PARAM_KEY_TEMPLATE_PARAM;
+import static com.leyou.common.constants.SmsConstants.*;
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
