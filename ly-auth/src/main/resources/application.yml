@@ -1,0 +1,31 @@
+server:
+  port: 8087
+spring:
+  application:
+    name: auth-service
+  redis:
+    host: 127.0.0.1
+    port: 6379
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:10086/eureka
+    registry-fetch-interval-seconds: 10
+  instance:
+    prefer-ip-address: true #显示ip而不是计算机名字
+    instance-id: ${spring.cloud.client.ip-address}:${server.port} #提取本机的ip
+ribbon:
+  ConnectTimeout: 500 # 连接超时时长
+  ReadTimeout: 20000 # 数据通信超时时长
+  MaxAutoRetries: 0 # 当前服务器的重试次数
+  MaxAutoRetriesNextServer: 1 # 重试多少次服务
+  OkToRetryOnAllOperations: false # 是否对所有的请求方式都重试 GET PUT DELETE POST
+ly:
+  jwt:
+    pubKeyPath: E:\IdeaProjects\leyoumall\id_rsa.pub # 公钥地址
+    priKeyPath: E:\IdeaProjects\leyoumall\id_rsa # 私钥地址
+    user:
+      expire: 30 # Token有效时间
+      cookieName: LY_TOKEN # Cookie名字
+      cookieDomain: leyou.com # Cookie在哪生效
+      minRefreshInterval: 15 # 最小刷新时间，有效时间低于这个时间就刷新Token

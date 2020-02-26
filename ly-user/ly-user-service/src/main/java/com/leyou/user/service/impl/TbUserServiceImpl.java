@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import com.leyou.common.enums.ExceptionEnum;
 import com.leyou.common.exceptions.LyException;
+import com.leyou.common.utils.BeanHelper;
 import com.leyou.user.dto.UserDTO;
 import com.leyou.user.entity.TbUser;
 import com.leyou.user.mapper.TbUserMapper;
@@ -95,8 +96,8 @@ public class TbUserServiceImpl extends ServiceImpl<TbUserMapper, TbUser> impleme
         map.put(SMS_PARAM_KEY_TEMPLATE_CODE,"SMS_184110954");
         map.put(SMS_PARAM_KEY_TEMPLATE_PARAM,"{\"code\":\""+numeric+"\"}");
         rocketMQTemplate.convertAndSend(SMS_TOPIC_NAME + ":" + VERIFY_CODE_TAGS,map);
-        //2.将redis放入redis
-        redisTemplate.boundValueOps("ly:sms:registry" + phone).set(numeric,30, TimeUnit.SECONDS);//设置存储时间为30s
+        //2.将验证码放入redis
+        redisTemplate.boundValueOps("ly:sms:registry" + phone).set(numeric,60, TimeUnit.SECONDS);//设置存储时间为30s
 
     }
 
@@ -141,7 +142,7 @@ public class TbUserServiceImpl extends ServiceImpl<TbUserMapper, TbUser> impleme
     @Override
     public UserDTO queryUserByUsernameAndPassword(String username, String password) {
         //1.先根据用户名查询,数据库中用户名有索引，而且参数中的password未加密
-        QueryWrapper<TbUser> queryWrapper = new QueryWrapper();
+        QueryWrapper<TbUser> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(TbUser::getUsername,username);
         TbUser tbUser = this.getOne(queryWrapper);
         if (tbUser == null) {//没有此用户
@@ -151,6 +152,6 @@ public class TbUserServiceImpl extends ServiceImpl<TbUserMapper, TbUser> impleme
         if(!bCryptPasswordEncoder.matches(password, tbUser.getPassword())){// 密码错误
             throw new LyException(ExceptionEnum.INVALID_USERNAME_PASSWORD);
         }
-        return null;
+        return BeanHelper.copyProperties(tbUser,UserDTO.class);
     }
 }

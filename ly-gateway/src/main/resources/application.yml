@@ -31,6 +31,8 @@ zuul:
     upload-service: /upload/**
     search-service: /search/**
     user-service: /user/**
+    auth-service: /auth/**
+  sensitive-headers: # 这里什么都不写，意味着什么都不敏感，cookie可以同行
 ly:
   cors:
     allowedOrigins: #允许的域名
