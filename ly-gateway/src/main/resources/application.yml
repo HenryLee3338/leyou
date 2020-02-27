@@ -32,6 +32,7 @@ zuul:
     search-service: /search/**
     user-service: /user/**
     auth-service: /auth/**
+    cart-service: /cart/**
   sensitive-headers: # 这里什么都不写，意味着什么都不敏感，cookie可以同行
 ly:
   cors:
@@ -54,3 +55,19 @@ ly:
       - HEAD
     maxAge: 3600 #允许跨域连接时间s
     filterPath: "/**" #允许哪些方法进行跨域
+  jwt:
+    pubKeyPath: E:\IdeaProjects\leyoumall\id_rsa.pub # 公钥地址
+    user:
+      expire: 30 # Token有效时间
+      cookieName: LY_TOKEN # Cookie名字
+      cookieDomain: leyou.com # Cookie在哪生效
+      minRefreshInterval: 15 # 最小刷新时间，有效时间低于这个时间就刷新Token
+  filter:
+    allowPaths: # 白名单: 不需要进入filter里的请求
+      - /api/auth/login
+      - /api/search
+      - /api/user/register
+      - /api/user/check
+      - /api/user/code
+      - /api/item
+      - /zuul/api/upload

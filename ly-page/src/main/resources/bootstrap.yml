@@ -1,0 +1,13 @@
+spring:
+  cloud:
+    config:
+      name: page
+      profile: dev
+      label: master
+      uri: http://127.0.0.1:12000
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    virtual-host: /leyou
+    username: leyou
+    password: leyou

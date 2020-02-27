@@ -152,6 +152,22 @@ public class GoodsServiceImpl implements GoodsService {
     }
 
     /**
+     * 根据skuId集合查询sku集合
+     * @param ids skuId集合
+     * @return sku集合
+     */
+    @Override
+    public List<SkuDTO> findSkuListBySkuIds(List<Long> ids) {
+        //1.查询
+        Collection<TbSku> tbSkus = skuService.listByIds(ids);
+        //2.转换
+        List<SkuDTO> skuDTOS = tbSkus.stream().map(tbSku -> {
+            return BeanHelper.copyProperties(tbSku, SkuDTO.class);
+        }).collect(Collectors.toList());
+        return skuDTOS;
+    }
+
+    /**
      * 修改商品上下架
      * @param id 商品id
      * @param saleable 上架还是下架
