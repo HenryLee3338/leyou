@@ -1,4 +1,4 @@
-package com.leyou.cart.entity;
+package com.leyou.common.auth.entity;
 
 public class UserHolder {
 

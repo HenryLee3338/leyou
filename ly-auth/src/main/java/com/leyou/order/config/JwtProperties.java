@@ -1,4 +1,4 @@
-package com.leyou.config;
+package com.leyou.order.config;
 
 import com.leyou.common.auth.utils.RsaUtils;
 import lombok.Data;

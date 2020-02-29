@@ -1,0 +1,28 @@
+server:
+  port: 8090
+spring:
+  application:
+    name: order-service
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    username: root
+    password: 123456
+    url: jdbc:mysql:///leyou?characterEncoding=UTF-8
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:10086/eureka
+    registry-fetch-interval-seconds: 10
+  instance:
+    prefer-ip-address: true #显示ip而不是计算机名字
+    instance-id: ${spring.cloud.client.ip-address}:${server.port} #提取本机的ip
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  # mapper-locations: classpath*:mapper/**Mapper.xml
+#rocketmq:
+#  name-server: 127.0.0.1:9876
+ly:
+  worker:
+    workerId: 1
+    dataCenterId: 1

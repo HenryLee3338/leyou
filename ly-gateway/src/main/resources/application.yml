@@ -33,6 +33,10 @@ zuul:
     user-service: /user/**
     auth-service: /auth/**
     cart-service: /cart/**
+    order-service:
+      path: /order/**
+      serviceId: order-service
+      strip-prefix: false # 这里选择了strip-prefix为false，因此路径中的/order会作为真实请求路径的一部分
   sensitive-headers: # 这里什么都不写，意味着什么都不敏感，cookie可以同行
 ly:
   cors:
