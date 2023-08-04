@@ -17,8 +17,6 @@ eureka:
     instance-id: ${spring.cloud.client.ip-address}:${server.port} #提取本机的ip
 ly:
   oss:
-    accessKeyId: LTAI4Fw8dX2SnpxfLyMKRWka
-    accessKeySecret: wTJr58Cxdb33onPDYQtjdGEkiMF8cz
     host: http://image.leyou.com # 访问oss的域名，很重要bucket + endpoint    代理http://leyoumall1.oss-cn-beijing.aliyuncs.com
     endpoint: oss-cn-beijing.aliyuncs.com # 你的服务的端点，不一定跟我一样
     dir: "" # 保存到bucket的某个子目录
